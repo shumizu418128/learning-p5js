@@ -10,6 +10,11 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Grid,
   List,
   ListItem,
@@ -57,7 +62,6 @@ function draw() {
 
   const [code, setCode] = useState(defaultCode)
   const [isRunning, setIsRunning] = useState(false)
-  const [hasError, setHasError] = useState(false)
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
     { sender: 'ai', text: 'こんにちは！AI先生だよ。プログラミングで困ったことがあったら、何でも聞いてね！' },
   ])
@@ -71,6 +75,8 @@ function draw() {
   const p5Instance = useRef<any>(null)
   const p5ScriptRef = useRef<HTMLScriptElement | null>(null)
   const chatScrollRef = useRef<HTMLDivElement>(null)
+  const [showResetDialog, setShowResetDialog] = useState(false)
+  const [showChatResetDialog, setShowChatResetDialog] = useState(false)
 
   // 励ましメッセージの配列
   const encouragementMessages = [
@@ -100,9 +106,6 @@ function draw() {
     // 改善アイデアも取得
     const suggestions = getImprovementSuggestions(code)
     setImprovementSuggestions(suggestions)
-
-    // コードが変更されたらエラー状態をリセット
-    setHasError(false)
   }, [code])
 
   // p5.jsスクリプトの動的読み込み
@@ -324,6 +327,9 @@ function draw() {
               // エラーメッセージを取得
               const errorMessage = error instanceof Error ? error.message : 'コードの実行中にエラーが発生しました'
 
+              // エラー状態を設定
+              setIsRunning(false)
+
               // エラーハンドリング用のsetup/draw
               userSetup = () => {
                 p.createCanvas(400, 400)
@@ -484,7 +490,6 @@ function draw() {
 
     setShowPreviewButton(true)
     setIsRunning(false)
-    setHasError(false)
     console.log('コード停止完了')
   }, [clearPreview])
 
@@ -699,6 +704,40 @@ function draw() {
     }
   }, [chatHistory, isLoadingAi])
 
+  // リセット確認ダイアログを開く
+  const handleResetClick = () => {
+    setShowResetDialog(true)
+  }
+
+  // リセットを実行
+  const handleResetConfirm = () => {
+    setCode(defaultCode)
+    setShowResetDialog(false)
+  }
+
+  // リセットをキャンセル
+  const handleResetCancel = () => {
+    setShowResetDialog(false)
+  }
+
+  // チャットリセット確認ダイアログを開く
+  const handleChatResetClick = () => {
+    setShowChatResetDialog(true)
+  }
+
+  // チャットリセットを実行
+  const handleChatResetConfirm = () => {
+    setChatHistory([
+      { sender: 'ai', text: 'こんにちは！AI先生だよ。プログラミングで困ったことがあったら、何でも聞いてね！' },
+    ])
+    setShowChatResetDialog(false)
+  }
+
+  // チャットリセットをキャンセル
+  const handleChatResetCancel = () => {
+    setShowChatResetDialog(false)
+  }
+
   return (
     <Box sx={{
       minHeight: '100vh',
@@ -801,7 +840,7 @@ function draw() {
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}
-            onClick={() => setCode(defaultCode)}
+            onClick={handleResetClick}
             sx={{
               color: '#667eea',
               borderColor: '#667eea',
@@ -966,9 +1005,7 @@ function draw() {
                     onClick={runCode}
                     disabled={!isP5Loaded}
                     sx={{
-                      background: hasError
-                        ? 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)'
-                        : 'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)',
+                      background: 'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)',
                       color: 'white',
                       fontWeight: 600,
                       borderRadius: '20px',
@@ -982,9 +1019,7 @@ function draw() {
                       '&:hover': {
                         transform: 'translateY(-2px)',
                         boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
-                        background: hasError
-                          ? 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)'
-                          : 'linear-gradient(135deg, #3db8b0 0%, #3a8f7d 100%)',
+                        background: 'linear-gradient(135deg, #3db8b0 0%, #3a8f7d 100%)',
                       },
                       '&:disabled': {
                         background: '#ccc',
@@ -995,7 +1030,7 @@ function draw() {
                       transition: 'all 0.3s ease',
                     }}
                   >
-                    {isP5Loaded ? (hasError ? '🔄 再実行' : '▶ 実行') : '読み込み中...'}
+                    {isP5Loaded ? '▶ 実行' : '読み込み中...'}
                   </Button>
                 )}
               </Box>
@@ -1022,7 +1057,10 @@ function draw() {
                 p: 2,
                 background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
                 color: '#2c3e50', // 文字色を濃く
-                fontWeight: 600
+                fontWeight: 600,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
               }}>
                 <Typography variant="h6" sx={{
                   fontWeight: 700,
@@ -1031,6 +1069,29 @@ function draw() {
                 }}>
                   🤖 AI先生とチャット
                 </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleChatResetClick}
+                  sx={{
+                    color: '#667eea',
+                    borderColor: '#667eea',
+                    borderRadius: '8px',
+                    px: 1.5,
+                    py: 0.5,
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    minWidth: 'auto',
+                    '&:hover': {
+                      background: 'rgba(102, 126, 234, 0.1)',
+                      borderColor: '#5a6fd8',
+                      transform: 'translateY(-1px)',
+                    },
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  リセット
+                </Button>
               </Box>
               <Box
                 ref={chatScrollRef}
@@ -1370,6 +1431,174 @@ function draw() {
           </Box>
         </Paper>
       )}
+
+      {/* チャットリセット確認ダイアログ */}
+      <Dialog
+        open={showChatResetDialog}
+        onClose={handleChatResetCancel}
+        aria-labelledby="chat-reset-dialog-title"
+        aria-describedby="chat-reset-dialog-description"
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            background: 'rgba(255,255,255,0.98)',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+            border: '1px solid rgba(255,255,255,0.2)',
+          }
+        }}
+      >
+        <DialogTitle id="chat-reset-dialog-title" sx={{
+          fontWeight: 700,
+          color: '#2c3e50',
+          textAlign: 'center',
+          pb: 1
+        }}>
+          🤖 チャット履歴をリセットしますか？
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="chat-reset-dialog-description" sx={{
+            color: '#555',
+            fontSize: '1rem',
+            textAlign: 'center',
+            lineHeight: 1.6
+          }}>
+            現在のチャット履歴は削除されて、AI先生の最初の挨拶に戻ります。
+            <br />
+            この操作は元に戻すことができません。
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{
+          p: 3,
+          pt: 1,
+          justifyContent: 'center',
+          gap: 2
+        }}>
+          <Button
+            onClick={handleChatResetCancel}
+            variant="outlined"
+            sx={{
+              borderRadius: '12px',
+              px: 3,
+              py: 1,
+              fontWeight: 600,
+              color: '#6c757d',
+              borderColor: '#6c757d',
+              '&:hover': {
+                background: 'rgba(108, 117, 125, 0.1)',
+                borderColor: '#5a6268',
+              },
+              transition: 'all 0.3s ease',
+            }}
+          >
+            キャンセル
+          </Button>
+          <Button
+            onClick={handleChatResetConfirm}
+            variant="contained"
+            sx={{
+              borderRadius: '12px',
+              px: 3,
+              py: 1,
+              fontWeight: 600,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a5acd 100%)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+              },
+              transition: 'all 0.3s ease',
+            }}
+          >
+            リセット
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* リセット確認ダイアログ */}
+      <Dialog
+        open={showResetDialog}
+        onClose={handleResetCancel}
+        aria-labelledby="reset-dialog-title"
+        aria-describedby="reset-dialog-description"
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            background: 'rgba(255,255,255,0.98)',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+            border: '1px solid rgba(255,255,255,0.2)',
+          }
+        }}
+      >
+        <DialogTitle id="reset-dialog-title" sx={{
+          fontWeight: 700,
+          color: '#2c3e50',
+          textAlign: 'center',
+          pb: 1
+        }}>
+          🔄 コードをリセットしますか？
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="reset-dialog-description" sx={{
+            color: '#555',
+            fontSize: '1rem',
+            textAlign: 'center',
+            lineHeight: 1.6
+          }}>
+            現在のコードは削除されて、最初のサンプルコードに戻ります。
+            <br />
+            この操作は元に戻すことができません。
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{
+          p: 3,
+          pt: 1,
+          justifyContent: 'center',
+          gap: 2
+        }}>
+          <Button
+            onClick={handleResetCancel}
+            variant="outlined"
+            sx={{
+              borderRadius: '12px',
+              px: 3,
+              py: 1,
+              fontWeight: 600,
+              color: '#6c757d',
+              borderColor: '#6c757d',
+              '&:hover': {
+                background: 'rgba(108, 117, 125, 0.1)',
+                borderColor: '#5a6268',
+              },
+              transition: 'all 0.3s ease',
+            }}
+          >
+            キャンセル
+          </Button>
+          <Button
+            onClick={handleResetConfirm}
+            variant="contained"
+            sx={{
+              borderRadius: '12px',
+              px: 3,
+              py: 1,
+              fontWeight: 600,
+              background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)',
+              color: 'white',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #ee5a52 0%, #e74c3c 100%)',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(238, 90, 82, 0.3)',
+              },
+              transition: 'all 0.3s ease',
+            }}
+          >
+            リセット
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
