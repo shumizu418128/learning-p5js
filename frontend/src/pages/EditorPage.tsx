@@ -2,6 +2,7 @@ import {
   Lightbulb as LightbulbIcon,
   PlayArrow as PlayIcon,
   Refresh as RefreshIcon,
+  School as SchoolIcon,
   Send as SendIcon,
   Stop as StopIcon,
 } from '@mui/icons-material'
@@ -329,6 +330,7 @@ function draw() {
 
               // エラー状態を設定
               setIsRunning(false)
+              setShowPreviewButton(false) // プレビューボタンを非表示にする
 
               // エラーハンドリング用のsetup/draw
               userSetup = () => {
@@ -416,35 +418,38 @@ function draw() {
               console.log('新しいp5インスタンスが作成されました')
             } catch (error) {
               console.error('p5インスタンス作成エラー:', error)
-              setShowPreviewButton(true)
-              setIsRunning(false) // エラー時は実行状態をfalseに設定
+              // エラー時はプレビューボタンを表示せず、エラーメッセージを表示
+              setShowPreviewButton(false)
+              setIsRunning(false)
 
               // AIチャットを自動で開始して修正方法を提案
-              const errorMessage = error instanceof Error ? error.message : 'p5インスタンスの作成中にエラーが発生しました'
-              askAiForErrorHelp(errorMessage)
+              const p5ErrorMessage = error instanceof Error ? error.message : 'p5インスタンスの作成中にエラーが発生しました'
+              askAiForErrorHelp(p5ErrorMessage)
             }
           } else {
             console.error('previewRef.currentがnullです')
           }
         } catch (error) {
           console.error('p5インスタンス作成エラー:', error)
-          setShowPreviewButton(true)
-          setIsRunning(false) // エラー時は実行状態をfalseに設定
+          // エラー時はプレビューボタンを表示せず、エラーメッセージを表示
+          setShowPreviewButton(false)
+          setIsRunning(false)
 
           // AIチャットを自動で開始して修正方法を提案
-          const errorMessage = error instanceof Error ? error.message : 'p5インスタンスの作成中にエラーが発生しました'
-          askAiForErrorHelp(errorMessage)
+          const sketchErrorMessage = error instanceof Error ? error.message : 'p5インスタンスの作成中にエラーが発生しました'
+          askAiForErrorHelp(sketchErrorMessage)
         }
       }, 100) // 100ms待機
 
     } catch (error) {
       console.error('コード実行エラー:', error)
-      setShowPreviewButton(true)
-      setIsRunning(false) // エラー時は実行状態をfalseに設定
+      // エラー時はプレビューボタンを表示せず、エラーメッセージを表示
+      setShowPreviewButton(false)
+      setIsRunning(false)
 
       // AIチャットを自動で開始して修正方法を提案
-      const errorMessage = error instanceof Error ? error.message : '予期しないエラーが発生しました'
-      askAiForErrorHelp(errorMessage)
+      const runErrorMessage = error instanceof Error ? error.message : '予期しないエラーが発生しました'
+      askAiForErrorHelp(runErrorMessage)
     }
   }, [code, clearPreview, isP5Loaded])
 
@@ -644,6 +649,65 @@ function draw() {
         chatScrollRef.current.scrollTop = elementTop - containerTop - 20 // 20pxの余白を追加
       }
     }, 100) // 100ms待機してからスクロール
+  }
+
+  // AI先生にお手本コードを求める
+  const askAiForExampleCode = async () => {
+    setIsLoadingAi(true)
+
+    try {
+      const response = await fetch('/api/ai/example-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentCode: code
+        }),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        // AIからのコードを自動でエディタに設定
+        if (data.code) {
+          setCode(data.code)
+        }
+
+        const aiResponse: ChatMessage = {
+          sender: 'ai',
+          text: `🎨 AI先生が君のコードをもとに楽しいお手本を書いたよ！\n
+君のコードの良い部分を活かして、もっと楽しい機能を追加したんだ！\n
+自動でコードエディタに書き込まれたから、実行ボタンを押して試してみてね！\n\n
+${data.explanation || ''}`,
+          id: 'example-code-message'
+        }
+        setChatHistory((prev) => [...prev, aiResponse])
+      } else {
+        const aiError: ChatMessage = {
+          sender: 'ai',
+          text: '今、AI先生は忙しいみたい。もう一度試してみてね！ 🤖'
+        }
+        setChatHistory((prev) => [...prev, aiError])
+      }
+    } catch (error) {
+      console.error('AI API エラー:', error)
+      const aiError: ChatMessage = {
+        sender: 'ai',
+        text: '🤖 AI先生は今、別のお友達を手伝っているみたい！少し待ってからもう一度聞いてみてね。それまでは自分でいろいろ試してみよう！'
+      }
+      setChatHistory((prev) => [...prev, aiError])
+    }
+    setIsLoadingAi(false)
+
+    // お手本コードのメッセージが表示された後にチャットを自動スクロール
+    setTimeout(() => {
+      const exampleCodeElement = document.getElementById('example-code-message')
+      if (exampleCodeElement && chatScrollRef.current) {
+        const elementTop = exampleCodeElement.offsetTop
+        const containerTop = chatScrollRef.current.offsetTop
+        chatScrollRef.current.scrollTop = elementTop - containerTop - 20
+      }
+    }, 100)
   }
 
   // サンプルコード
@@ -887,6 +951,36 @@ function draw() {
             }}
           >
             {isLoadingAi ? '考え中...' : 'AI先生に聞いてみる'}
+          </Button>
+
+          <Button
+            variant="contained"
+            startIcon={<SchoolIcon />}
+            onClick={askAiForExampleCode}
+            disabled={isLoadingAi}
+            sx={{
+              background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+              color: '#333',
+              fontWeight: 600,
+              borderRadius: '12px',
+              px: 3,
+              py: 1,
+              boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+              },
+              '&:disabled': {
+                background: '#ccc',
+                color: '#666',
+                transform: 'none',
+                boxShadow: 'none',
+              },
+              minWidth: '200px',
+              transition: 'all 0.3s ease',
+            }}
+          >
+            {isLoadingAi ? 'お手本作成中...' : 'AI先生のお手本を見る'}
           </Button>
         </Box>
       </Paper>

@@ -151,7 +151,8 @@ export class AIController {
           'code_analysis',
           'error_help',
           'question_answering',
-          'improvement_suggestions'
+          'improvement_suggestions',
+          'example_code_generation'
         ]
       })
 
@@ -160,6 +161,41 @@ export class AIController {
       return res.status(500).json({
         error: 'AI状態の確認に失敗しました',
         message: 'サーバーエラーが発生しました'
+      })
+    }
+  }
+
+  /**
+   * AI先生のお手本コード生成API
+   */
+  async generateExampleCode(req: Request, res: Response) {
+    try {
+      const { currentCode, context } = req.body
+
+      if (!currentCode) {
+        return res.status(400).json({
+          success: false,
+          error: '現在のコードが提供されていません'
+        })
+      }
+
+      const result = await geminiService.generateExampleCode({
+        currentCode,
+        context
+      })
+
+      return res.json({
+        success: true,
+        code: result.code,
+        explanation: result.explanation,
+        error: result.error
+      })
+
+    } catch (error) {
+      logger.error('お手本コード生成API エラー:', error)
+      return res.status(500).json({
+        success: false,
+        error: 'お手本コードの生成に失敗しました'
       })
     }
   }
