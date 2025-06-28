@@ -228,6 +228,11 @@ function draw() {
             // グローバル変数を設定
             let userSetup: any = null
             let userDraw: any = null
+            let userMousePressed: any = null
+            let userMouseReleased: any = null
+            let userMouseDragged: any = null
+            let userKeyPressed: any = null
+            let userKeyReleased: any = null
 
             try {
               // ユーザーコードを安全に評価
@@ -292,14 +297,26 @@ function draw() {
                   configurable: true
                 })
 
+                // デフォルトの空のイベント関数を定義
+                function mousePressed() {}
+                function mouseReleased() {}
+                function mouseDragged() {}
+                function keyPressed() {}
+                function keyReleased() {}
+
                 ${code}
 
-                return { setup, draw }
+                return { setup, draw, mousePressed, mouseReleased, mouseDragged, keyPressed, keyReleased }
               `)
 
               const result = evalCode(p)
               userSetup = result.setup
               userDraw = result.draw
+              userMousePressed = result.mousePressed
+              userMouseReleased = result.mouseReleased
+              userMouseDragged = result.mouseDragged
+              userKeyPressed = result.keyPressed
+              userKeyReleased = result.keyReleased
               console.log('ユーザーコードの評価が完了しました')
 
             } catch (error) {
@@ -350,6 +367,37 @@ function draw() {
             p.draw = () => {
               if (userDraw) {
                 userDraw()
+              }
+            }
+
+            // イベント関数を設定
+            p.mousePressed = () => {
+              if (userMousePressed) {
+                userMousePressed()
+              }
+            }
+
+            p.mouseReleased = () => {
+              if (userMouseReleased) {
+                userMouseReleased()
+              }
+            }
+
+            p.mouseDragged = () => {
+              if (userMouseDragged) {
+                userMouseDragged()
+              }
+            }
+
+            p.keyPressed = () => {
+              if (userKeyPressed) {
+                userKeyPressed()
+              }
+            }
+
+            p.keyReleased = () => {
+              if (userKeyReleased) {
+                userKeyReleased()
               }
             }
           }
@@ -420,7 +468,8 @@ function draw() {
         'lerp', 'sin', 'cos', 'tan', 'degrees', 'radians',
         'push', 'pop', 'translate', 'rotate', 'scale',
         'CENTER', 'LEFT', 'RIGHT', 'TOP', 'BOTTOM',
-        'mouseX', 'mouseY', 'width', 'height', 'frameCount'
+        'mouseX', 'mouseY', 'width', 'height', 'frameCount',
+        'mousePressed', 'mouseReleased', 'mouseDragged', 'keyPressed', 'keyReleased'
       ]
 
       globalVars.forEach(varName => {
