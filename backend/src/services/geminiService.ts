@@ -89,7 +89,10 @@ ${request.code}
 200字以内で回答してください。
 `)
 
-      const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash'
+      const model = process.env.GEMINI_MODEL
+      if (!model) {
+        throw new Error('GEMINI_MODEL環境変数が設定されていません')
+      }
       const response = await this.genAI!.models.generateContent({
         model: model,
         contents: prompt
@@ -135,7 +138,10 @@ ${request.code}
 200字以内で回答してください。
 `)
 
-      const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash'
+      const model = process.env.GEMINI_MODEL
+      if (!model) {
+        throw new Error('GEMINI_MODEL環境変数が設定されていません')
+      }
       const response = await this.genAI!.models.generateContent({
         model: model,
         contents: prompt
