@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # 依存関係をインストール
-RUN npm ci
+RUN npm install --omit=dev
 
 # アプリケーションコードをコピー
 COPY . .
@@ -15,7 +15,7 @@ COPY . .
 COPY ../frontend ./frontend
 
 # フロントエンドの依存関係をインストール
-RUN cd frontend && npm ci
+RUN cd frontend && npm install
 
 # TypeScriptをビルドし、フロントエンドもビルド
 RUN npm run build
