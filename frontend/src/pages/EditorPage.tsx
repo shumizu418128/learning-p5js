@@ -1,29 +1,30 @@
 import {
-    Lightbulb as LightbulbIcon,
-    PlayArrow as PlayIcon,
-    Refresh as RefreshIcon,
-    School as SchoolIcon,
-    Send as SendIcon,
-    Stop as StopIcon,
+  Lightbulb as LightbulbIcon,
+  PlayArrow as PlayIcon,
+  Refresh as RefreshIcon,
+  School as SchoolIcon,
+  Send as SendIcon,
+  Stop as StopIcon,
 } from '@mui/icons-material'
 import {
-    Box,
-    Button,
-    Chip,
-    CircularProgress,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
-    List,
-    ListItem,
-    Paper,
-    TextField,
-    Typography
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  List,
+  ListItem,
+  Paper,
+  TextField,
+  Typography
 } from '@mui/material'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import MarkdownRenderer from '../components/MarkdownRenderer'
+import api from '../services/api'
 import { analyzeCode, getImprovementSuggestions, getLevelColor, getLevelName } from '../utils/codeAnalyzer'
 
 // p5.jsの型定義
@@ -508,36 +509,19 @@ function draw() {
     setIsLoadingAi(true)
 
     try {
-      const response = await fetch('/api/ai/question', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          question: questionText,
-          context: `現在のコード: ${code}\n\nチャット履歴:\n${chatHistory.map(msg => `${msg.sender}: ${msg.text}`).join('\n')}`
-        }),
+      const response = await api.post('/api/ai/question', {
+        question: questionText,
+        context: `現在のコード: ${code}\n\nチャット履歴:\n${chatHistory.map(msg => `${msg.sender}: ${msg.text}`).join('\n')}`
       })
 
       // レスポンスのステータスコードをチェック
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+      if (!response.data.success) {
+        throw new Error(`API error: ${response.data.error || 'Unknown error'}`)
       }
 
-      // レスポンスのContent-Typeをチェック
-      const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error(`Expected JSON response but got ${contentType}`)
-      }
-
-      const data = await response.json()
-      if (data.success) {
-        const aiResponse: ChatMessage = { sender: 'ai', text: data.answer || 'AI先生からのアドバイスを受け取りました！' }
-        setChatHistory((prev) => [...prev, aiResponse])
-      } else {
-        const aiError: ChatMessage = { sender: 'ai', text: '今、AI先生は忙しいみたい。もう一度試してみてね！ 🤖' }
-        setChatHistory((prev) => [...prev, aiError])
-      }
+      const data = response.data
+      const aiResponse: ChatMessage = { sender: 'ai', text: data.answer || 'AI先生からのアドバイスを受け取りました！' }
+      setChatHistory((prev) => [...prev, aiResponse])
     } catch (error) {
       console.error('AI API エラー:', error)
       const aiError: ChatMessage = { sender: 'ai', text: '🤖 AI先生は今、別のお友達を手伝っているみたい！少し待ってからもう一度聞いてみてね。それまでは自分でいろいろ試してみよう！' }
@@ -551,15 +535,10 @@ function draw() {
     setIsLoadingAi(true)
 
     try {
-      const response = await fetch('/api/ai/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          code: code,
-          studentLevel: 'beginner',
-          context: `現在のコードについて、小学生向けに優しくフィードバックしてください。
+      const response = await api.post('/api/ai/analyze', {
+        code: code,
+        studentLevel: 'beginner',
+        context: `現在のコードについて、小学生向けに優しくフィードバックしてください。
 
 コードの内容: ${code}
 
@@ -572,34 +551,19 @@ function draw() {
 4. 励ましのメッセージ
 
 小学生が理解しやすい言葉で、絵文字も使って親しみやすく説明してください。`
-        }),
       })
 
       // レスポンスのステータスコードをチェック
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+      if (!response.data.success) {
+        throw new Error(`API error: ${response.data.error || 'Unknown error'}`)
       }
 
-      // レスポンスのContent-Typeをチェック
-      const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error(`Expected JSON response but got ${contentType}`)
+      const data = response.data
+      const aiResponse: ChatMessage = {
+        sender: 'ai',
+        text: data.analysis || 'AI先生からのフィードバックを受け取りました！'
       }
-
-      const data = await response.json()
-      if (data.success) {
-        const aiResponse: ChatMessage = {
-          sender: 'ai',
-          text: data.analysis || 'AI先生からのフィードバックを受け取りました！'
-        }
-        setChatHistory((prev) => [...prev, aiResponse])
-      } else {
-        const aiError: ChatMessage = {
-          sender: 'ai',
-          text: '今、AI先生は忙しいみたい。もう一度試してみてね！ 🤖'
-        }
-        setChatHistory((prev) => [...prev, aiError])
-      }
+      setChatHistory((prev) => [...prev, aiResponse])
     } catch (error) {
       console.error('AI API エラー:', error)
       const aiError: ChatMessage = {
@@ -623,44 +587,24 @@ function draw() {
     setChatHistory((prev) => [...prev, encouragementMessage])
 
     try {
-      const response = await fetch('/api/ai/error-help', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          code: code,
-          errorMessage: errorMessage,
-          lineNumber: errorLine
-        }),
+      const response = await api.post('/api/ai/error-help', {
+        code: code,
+        errorMessage: errorMessage,
+        lineNumber: errorLine
       })
 
       // レスポンスのステータスコードをチェック
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+      if (!response.data.success) {
+        throw new Error(`API error: ${response.data.error || 'Unknown error'}`)
       }
 
-      // レスポンスのContent-Typeをチェック
-      const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error(`Expected JSON response but got ${contentType}`)
+      const data = response.data
+      const aiResponse: ChatMessage = {
+        sender: 'ai',
+        text: `🔧 修正方法を教えるね！\n\n${data.help || 'AI先生からの修正アドバイスを受け取りました！'}`,
+        id: 'error-help-message' // 修正方法メッセージにIDを追加
       }
-
-      const data = await response.json()
-      if (data.success) {
-        const aiResponse: ChatMessage = {
-          sender: 'ai',
-          text: `🔧 修正方法を教えるね！\n\n${data.help || 'AI先生からの修正アドバイスを受け取りました！'}`,
-          id: 'error-help-message' // 修正方法メッセージにIDを追加
-        }
-        setChatHistory((prev) => [...prev, aiResponse])
-      } else {
-        const aiError: ChatMessage = {
-          sender: 'ai',
-          text: '今、AI先生は忙しいみたい。もう一度試してみてね！ 🤖'
-        }
-        setChatHistory((prev) => [...prev, aiError])
-      }
+      setChatHistory((prev) => [...prev, aiResponse])
     } catch (error) {
       console.error('AI API エラー:', error)
       const aiError: ChatMessage = {
@@ -688,50 +632,30 @@ function draw() {
     setIsLoadingAi(true)
 
     try {
-      const response = await fetch('/api/ai/example-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          currentCode: code
-        }),
+      const response = await api.post('/api/ai/example-code', {
+        currentCode: code
       })
 
       // レスポンスのステータスコードをチェック
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+      if (!response.data.success) {
+        throw new Error(`API error: ${response.data.error || 'Unknown error'}`)
       }
 
-      // レスポンスのContent-Typeをチェック
-      const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error(`Expected JSON response but got ${contentType}`)
+      const data = response.data
+      // AIからのコードを自動でエディタに設定
+      if (data.code) {
+        setCode(data.code)
       }
 
-      const data = await response.json()
-      if (data.success) {
-        // AIからのコードを自動でエディタに設定
-        if (data.code) {
-          setCode(data.code)
-        }
-
-        const aiResponse: ChatMessage = {
-          sender: 'ai',
-          text: `🎨 AI先生が君のコードをもとに楽しいお手本を書いたよ！\n
+      const aiResponse: ChatMessage = {
+        sender: 'ai',
+        text: `🎨 AI先生が君のコードをもとに楽しいお手本を書いたよ！\n
 君のコードの良い部分を活かして、もっと楽しい機能を追加したんだ！\n
 自動でコードエディタに書き込まれたから、実行ボタンを押して試してみてね！\n\n
 ${data.explanation || ''}`,
-          id: 'example-code-message'
-        }
-        setChatHistory((prev) => [...prev, aiResponse])
-      } else {
-        const aiError: ChatMessage = {
-          sender: 'ai',
-          text: '今、AI先生は忙しいみたい。もう一度試してみてね！ 🤖'
-        }
-        setChatHistory((prev) => [...prev, aiError])
+        id: 'example-code-message'
       }
+      setChatHistory((prev) => [...prev, aiResponse])
     } catch (error) {
       console.error('AI API エラー:', error)
       const aiError: ChatMessage = {
