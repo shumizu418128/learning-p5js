@@ -17,7 +17,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, sx }) => {
         rehypePlugins={[rehypeHighlight]}
         components={{
           // コードブロックのカスタマイズ
-          code: ({ node, inline, className, children, ...props }) => {
+          code: (props) => {
+            const { inline, className, children, ...rest } = props
             const match = /language-(\w+)/.exec(className || '')
             const language = match ? match[1] : ''
 
@@ -32,7 +33,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, sx }) => {
                     fontFamily: 'monospace',
                     color: '#d73a49'
                   }}
-                  {...props}
+                  {...rest}
                 >
                   {children}
                 </code>
@@ -71,7 +72,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, sx }) => {
                   </Typography>
                 )}
                 <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                  <code className={className} {...props}>
+                  <code className={className} {...rest}>
                     {children}
                   </code>
                 </pre>
