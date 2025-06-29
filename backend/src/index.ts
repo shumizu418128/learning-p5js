@@ -88,13 +88,10 @@ app.use('/api/projects', (req, res) => {
 app.use(express.static(path.join(__dirname, '../public')))
 
 // SPAのルーティング対応（すべてのルートをindex.htmlにフォールバック）
-app.get('*', (req, res) => {
-  // APIルートの場合は404を返す
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API endpoint not found' })
-  }
-
-  // その他のルートはフロントエンドのindex.htmlを返す
+app.use((req, res, next) => {
+  if (req.method !== 'GET') return next()
+  if (req.path.startsWith('/api/')) return next()
+  if (!req.accepts('html')) return next()
   res.sendFile(path.join(__dirname, '../public/index.html'))
 })
 
@@ -210,7 +207,9 @@ io.on('connection', (socket) => {
 })
 
 // エラーハンドリング
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+import { NextFunction, Request, Response } from 'express';
+
+app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
   logger.error('エラーが発生しました:', err)
   res.status(500).json({
     error: 'サーバーエラーが発生しました',
@@ -219,7 +218,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 })
 
 // 404ハンドリング
-app.use('*', (req, res) => {
+app.all('*', (req, res) => {
   res.status(404).json({
     error: 'Not Found',
     message: 'リクエストされたリソースが見つかりません'
