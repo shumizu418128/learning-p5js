@@ -11,8 +11,11 @@ RUN npm ci
 # アプリケーションコードをコピー
 COPY . .
 
+# ビルド
+RUN npm run build
+
 # ポートを公開
 EXPOSE 3000
 
-# 開発サーバーを起動
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# 本番サーバーで起動
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0"]

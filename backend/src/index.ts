@@ -5,6 +5,7 @@ import express from 'express'
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 import { createServer } from 'http'
+import path from 'path'
 import { Server } from 'socket.io'
 import aiRoutes from './routes/aiRoutes'
 import geminiService from './services/geminiService'
@@ -81,6 +82,20 @@ app.use('/api/auth', (req, res) => {
 
 app.use('/api/projects', (req, res) => {
   res.json({ message: 'プロジェクトAPIをここに実装予定' })
+})
+
+// フロントエンドの静的ファイルを配信
+app.use(express.static(path.join(__dirname, '../public')))
+
+// SPAのルーティング対応（すべてのルートをindex.htmlにフォールバック）
+app.get('*', (req, res) => {
+  // APIルートの場合は404を返す
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' })
+  }
+
+  // その他のルートはフロントエンドのindex.htmlを返す
+  res.sendFile(path.join(__dirname, '../public/index.html'))
 })
 
 // WebSocket接続の処理

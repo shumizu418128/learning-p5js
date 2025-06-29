@@ -6,13 +6,22 @@ WORKDIR /app
 COPY package*.json ./
 
 # 依存関係をインストール
-RUN npm ci --only=production
+RUN npm ci
 
 # アプリケーションコードをコピー
 COPY . .
 
-# TypeScriptをビルド
+# フロントエンドのコードをコピー
+COPY ../frontend ./frontend
+
+# フロントエンドの依存関係をインストール
+RUN cd frontend && npm ci
+
+# TypeScriptをビルドし、フロントエンドもビルド
 RUN npm run build
+
+# 不要なファイルを削除してイメージサイズを削減
+RUN rm -rf frontend/node_modules frontend/src
 
 # ポートを公開
 EXPOSE 8000
