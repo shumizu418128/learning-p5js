@@ -1,4 +1,5 @@
-FROM node:alpine
+# ビルドステージ
+FROM node:alpine AS builder
 
 WORKDIR /app
 
@@ -6,16 +7,25 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # 依存関係をインストール
-RUN npm install
+RUN npm ci
 
-# アプリケーションコードをコピー
+# ソースコードをコピー
 COPY . .
 
 # ビルド
 RUN npm run build
 
-# ポートを公開
-EXPOSE 3000
+# 本番ステージ
+FROM nginx:alpine
 
-# 本番サーバーで起動
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0"]
+# ビルド結果をnginxにコピー
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# nginx設定をコピー
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# ポートを公開
+EXPOSE 80
+
+# nginxを起動
+CMD ["nginx", "-g", "daemon off;"]

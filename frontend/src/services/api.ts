@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// 統合環境では同じドメイン内でAPIにアクセス
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+// 本番環境のバックエンドURLをデフォルトとして設定
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://kidscode-studio-backend.onrender.com';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

@@ -30,7 +30,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 ### 1.4 デプロイ
 - 「Create Web Service」をクリックしてデプロイ開始
-- デプロイ完了後、バックエンドのURLをメモ（例: `https://kidscode-backend.onrender.com`）
+- デプロイ完了後、バックエンドのURLをメモ（例: `https://kidscode-studio-backend.onrender.com`）
 
 ---
 
@@ -46,13 +46,13 @@ GEMINI_API_KEY=your_gemini_api_key_here
 - **Dockerfile**: `frontend/Dockerfile`
 - **Build Command**: 空欄でOK（Dockerfileに記載済み）
 - **Start Command**: 空欄でOK（Dockerfileに記載済み）
-- **Port**: `3000`
+- **Port**: `80`
 
 ### 2.3 環境変数の設定
 フロントエンドサービスで以下の環境変数を設定：
 
 ```
-VITE_API_URL=https://kidscode-backend.onrender.com
+VITE_API_URL=https://kidscode-studio-backend.onrender.com
 ```
 
 ### 2.4 デプロイ
@@ -126,6 +126,7 @@ npm run dev
 - **CORS設定**: フロントエンドからバックエンドへのアクセスには適切なCORS設定が必要
 - **環境変数**: 各サービスで適切な環境変数を設定する必要がある
 - **ネットワーク**: Render.comでは各サービスが独立したネットワークで動作
+- **nginx**: フロントエンドはnginxを使用して静的ファイルを配信
 
 ---
 
@@ -142,3 +143,8 @@ npm run dev
 ### 7.3 ビルドエラーが発生する場合
 - Dockerfileの内容を確認
 - 必要な依存関係が正しくインストールされているか確認
+- package.jsonファイルが正しくコピーされているか確認
+
+### 7.4 nginxエラーが発生する場合
+- nginx.confファイルが正しく設定されているか確認
+- ビルド結果が正しくnginxにコピーされているか確認
