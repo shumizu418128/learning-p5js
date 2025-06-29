@@ -6,7 +6,7 @@ WORKDIR /app
 COPY backend/package*.json ./
 
 # 依存関係をインストール
-RUN npm install --omit=dev
+RUN npm install
 
 # アプリケーションコードをコピー
 COPY backend/. ./
