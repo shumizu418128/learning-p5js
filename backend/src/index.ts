@@ -84,26 +84,8 @@ app.use('/api/projects', (req, res) => {
   res.json({ message: 'プロジェクトAPIをここに実装予定' })
 })
 
-/*
- * フロントエンドの静的ファイル配信とSPAフォールバックは
- * APIルートの後、404ハンドラの前に配置する
- */
-
-// フロントエンドの静的ファイルを配信
-app.use(express.static(path.join(__dirname, '../public')))
-
-// SPAのルーティング対応（すべてのルートをindex.htmlにフォールバック）
-app.get('*', (req, res) => {
-  // APIルートには反応しない
-  if (req.path.startsWith('/api/')) {
-    res.status(404).json({
-      error: 'Not Found',
-      message: 'APIエンドポイントが見つかりません'
-    })
-    return
-  }
-  res.sendFile(path.join(__dirname, '../public/index.html'))
-})
+// フロントエンドの静的ファイル配信・SPAフォールバックは削除
+// このサーバーはAPI専用とする
 
 // WebSocket接続の処理
 io.on('connection', (socket) => {

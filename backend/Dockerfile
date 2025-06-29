@@ -11,17 +11,13 @@ RUN npm install
 # アプリケーションコードをコピー
 COPY backend/. ./
 
-# フロントエンドのコードをコピー
-COPY frontend ./frontend
+# バックエンドのみのDockerfileに修正
 
-# フロントエンドの依存関係をインストール
-RUN cd frontend && npm install
-
-# TypeScriptをビルドし、フロントエンドもビルド
+# TypeScriptをビルド
 RUN npm run build
 
 # 不要なファイルを削除してイメージサイズを削減
-RUN rm -rf frontend/node_modules frontend/src
+RUN rm -rf src logs
 
 # ポートを公開
 EXPOSE 8000
