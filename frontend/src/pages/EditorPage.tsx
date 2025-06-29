@@ -16,7 +16,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Grid,
   List,
   ListItem,
   Paper,
@@ -995,9 +994,9 @@ function draw() {
         zIndex: 1,
         flexShrink: 0 // サイズを固定
       }}>
-        <Grid container sx={{ height: '100%' }} spacing={1}>
+<Box sx={{ display: 'flex', height: '100%', gap: 1 }}>
           {/* コードエディタ */}
-<Grid item xs={12} md={6} lg={5} sx={{ height: '100%' }}>
+<Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%', lg: '1 1 40%' }, height: '100%' }}>
             <Paper sx={{
               height: '100%',
               display: 'flex',
@@ -1054,10 +1053,10 @@ function draw() {
                 placeholder="ここにp5.jsのコードを書いてね！"
               />
             </Paper>
-          </Grid>
+          </Box>
 
           {/* プレビューエリア */}
-<Grid item xs={12} md={6} lg={4} sx={{ height: '100%' }}>
+<Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%', lg: '1 1 32%' }, height: '100%' }}>
             <Paper sx={{
               height: '100%',
               display: 'flex',
@@ -1129,11 +1128,12 @@ function draw() {
                 )}
               </Box>
             </Paper>
-          </Grid>
+          </Box>
 
           {/* AI先生チャットパネル */}
-<Grid item xs={12} md={12} lg={3} sx={{
+<Box sx={{
             display: { xs: 'none', md: 'block' }, // 中画面以上で表示
+            flex: { lg: '1 1 28%' },
             height: '100%' // 全高さに変更
           }}>
             <Paper sx={{
@@ -1349,8 +1349,8 @@ function draw() {
                 />
               </Box>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Box>
 
       {/* サンプルコードエリア */}
