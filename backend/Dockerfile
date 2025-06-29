@@ -11,9 +11,7 @@ RUN npm install
 # アプリケーションコードをコピー
 COPY backend/. ./
 
-# バックエンドのみのDockerfileに修正
-
-# TypeScriptをビルド
+# TypeScriptをビルド（バックエンドのみ）
 RUN npm run build
 
 # 不要なファイルを削除してイメージサイズを削減

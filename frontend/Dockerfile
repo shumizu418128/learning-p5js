@@ -3,7 +3,7 @@ FROM node:alpine
 WORKDIR /app
 
 # パッケージファイルをコピー
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
 # 依存関係をインストール
 RUN npm install
