@@ -17,12 +17,15 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, sx }) => {
         rehypePlugins={[rehypeHighlight]}
         components={{
           // コードブロックのカスタマイズ
-          code: (props) => {
-            const { inline, className, children, ...rest } = props
+code: (props) => {
+            // 'inline' プロパティは型定義に存在しないため、props.node.inline で判定
+            const { className, children, ...rest } = props
+            // @ts-ignore
+            const isInline = props.node && props.node.inline
             const match = /language-(\w+)/.exec(className || '')
             const language = match ? match[1] : ''
 
-            if (inline) {
+            if (isInline) {
               return (
                 <code
                   style={{
