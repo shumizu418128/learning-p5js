@@ -3,16 +3,16 @@ FROM node:18-alpine
 WORKDIR /app
 
 # パッケージファイルをコピー
-COPY ./package*.json ./
+COPY backend/package*.json ./
 
 # 依存関係をインストール
 RUN npm install --omit=dev
 
 # アプリケーションコードをコピー
-COPY . .
+COPY backend/. ./
 
 # フロントエンドのコードをコピー
-COPY ../frontend ./frontend
+COPY frontend ./frontend
 
 # フロントエンドの依存関係をインストール
 RUN cd frontend && npm install
