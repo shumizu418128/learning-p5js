@@ -995,9 +995,9 @@ function draw() {
         zIndex: 1,
         flexShrink: 0 // サイズを固定
       }}>
-        <Grid container sx={{ height: '100%' }} spacing={1}> {/* スペーシングを減らす */}
+        <Grid container sx={{ height: '100%' }} spacing={1}>
           {/* コードエディタ */}
-          <Grid item xs={12} md={6} lg={5} sx={{ height: '100%' }}>
+<Grid item xs={12} md={6} lg={5} sx={{ height: '100%' }}>
             <Paper sx={{
               height: '100%',
               display: 'flex',
@@ -1057,7 +1057,7 @@ function draw() {
           </Grid>
 
           {/* プレビューエリア */}
-          <Grid item xs={12} md={6} lg={4} sx={{ height: '100%' }}>
+<Grid item xs={12} md={6} lg={4} sx={{ height: '100%' }}>
             <Paper sx={{
               height: '100%',
               display: 'flex',
@@ -1132,7 +1132,7 @@ function draw() {
           </Grid>
 
           {/* AI先生チャットパネル */}
-          <Grid item xs={12} md={12} lg={3} sx={{
+<Grid item xs={12} md={12} lg={3} sx={{
             display: { xs: 'none', md: 'block' }, // 中画面以上で表示
             height: '100%' // 全高さに変更
           }}>
