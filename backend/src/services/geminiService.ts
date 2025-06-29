@@ -299,7 +299,10 @@ ${request.currentCode}
       try {
         const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/)
         if (jsonMatch) {
-          const jsonData = JSON.parse(jsonMatch[1])
+          const jsonString = jsonMatch[1].trim()
+          logger.info('JSON文字列を解析中:', jsonString.substring(0, 100) + '...')
+
+          const jsonData = JSON.parse(jsonString)
           return {
             code: jsonData.code || request.currentCode,
             explanation: jsonData.explanation || '楽しいコードができました！'
@@ -316,9 +319,23 @@ ${request.currentCode}
         }
       } catch (parseError) {
         logger.warn('JSON解析エラー、フォールバック処理を実行:', parseError)
+        logger.warn('解析しようとしたテキスト:', text.substring(0, 200) + '...')
+
+        // コードブロックを探すフォールバック
+        try {
+          const codeMatch = text.match(/```javascript\s*([\s\S]*?)\s*```/)
+          if (codeMatch) {
+            return {
+              code: codeMatch[1],
+              explanation: 'AI先生が楽しいコードを書いてくれました！実行してみてね！'
+            }
+          }
+        } catch (fallbackError) {
+          logger.error('フォールバック処理でもエラー:', fallbackError)
+        }
       }
 
-      // フォールバック: 現在のコードをそのまま返す
+      // 最終フォールバック: 現在のコードをそのまま返す
       return {
         code: request.currentCode,
         explanation: 'AI先生が忙しいみたいだけど、君のコードはとても良いよ！もう一度試してみてね！'

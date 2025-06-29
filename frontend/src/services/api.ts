@@ -29,8 +29,42 @@ api.interceptors.response.use(
   },
   (error) => {
     console.error('API Error:', error);
+
+    // エラーの詳細をログに出力
+    if (error.response) {
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+      console.error('Response headers:', error.response.headers);
+    } else if (error.request) {
+      console.error('Request error:', error.request);
+    } else {
+      console.error('Error message:', error.message);
+    }
+
     return Promise.reject(error);
   }
 );
+
+// APIの状態確認関数
+export const checkApiStatus = async () => {
+  try {
+    const response = await api.get('/api/ai/status');
+    return response.data;
+  } catch (error) {
+    console.error('API status check failed:', error);
+    return { success: false, error: 'API接続エラー' };
+  }
+};
+
+// 安全なJSONパース関数
+export const safeJsonParse = (text: string) => {
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('JSON parse error:', error);
+    console.error('Attempted to parse:', text.substring(0, 200) + '...');
+    return null;
+  }
+};
 
 export default api;

@@ -227,15 +227,36 @@ io.on('connection', (socket) => {
 })
 
 // エラーハンドリング
-import { NextFunction, Request, Response } from 'express'
+import { ErrorRequestHandler } from 'express'
 
-app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+// JSONパースエラーハンドリング
+const jsonErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  if (err instanceof SyntaxError && 'body' in err) {
+    logger.error('JSONパースエラー:', err)
+    res.setHeader('Content-Type', 'application/json')
+    res.status(400).json({
+      success: false,
+      error: '無効なJSON形式です',
+      message: 'リクエストボディのJSON形式が正しくありません'
+    })
+    return
+  }
+  next(err)
+}
+
+// 一般的なエラーハンドリング
+const generalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   logger.error('エラーが発生しました:', err)
+  res.setHeader('Content-Type', 'application/json')
   res.status(500).json({
+    success: false,
     error: 'サーバーエラーが発生しました',
     message: process.env.NODE_ENV === 'development' ? err.message : '内部サーバーエラー'
   })
-})
+}
+
+app.use(jsonErrorHandler)
+app.use(generalErrorHandler)
 
 // 404ハンドリング
 // （SPAフォールバックより後ろには不要なので削除）

@@ -24,6 +24,7 @@ export class AIController {
         context
       })
 
+      res.setHeader('Content-Type', 'application/json')
       return res.json({
         success: true,
         analysis: result.text,
@@ -32,6 +33,7 @@ export class AIController {
 
     } catch (error) {
       logger.error('コード分析エラー:', error)
+      res.setHeader('Content-Type', 'application/json')
       return res.status(500).json({
         success: false,
         error: 'コード分析中にエラーが発生しました'
@@ -47,7 +49,9 @@ export class AIController {
       const { code, errorMessage, lineNumber } = req.body
 
       if (!code || !errorMessage) {
+        res.setHeader('Content-Type', 'application/json')
         return res.status(400).json({
+          success: false,
           error: '必要な情報が不足しています',
           message: 'code と errorMessage は必須です'
         })
@@ -59,6 +63,7 @@ export class AIController {
         lineNumber
       })
 
+      res.setHeader('Content-Type', 'application/json')
       return res.json({
         success: true,
         help: result.text,
@@ -67,7 +72,9 @@ export class AIController {
 
     } catch (error) {
       logger.error('エラーヘルプAPI エラー:', error)
+      res.setHeader('Content-Type', 'application/json')
       return res.status(500).json({
+        success: false,
         error: 'エラーヘルプの生成に失敗しました',
         message: 'サーバーエラーが発生しました'
       })
@@ -82,7 +89,9 @@ export class AIController {
       const { question, context } = req.body
 
       if (!question) {
+        res.setHeader('Content-Type', 'application/json')
         return res.status(400).json({
+          success: false,
           error: '質問が入力されていません',
           message: 'question フィールドは必須です'
         })
@@ -90,6 +99,7 @@ export class AIController {
 
       const result = await geminiService.askQuestion(question, context)
 
+      res.setHeader('Content-Type', 'application/json')
       return res.json({
         success: true,
         answer: result.text,
@@ -98,7 +108,9 @@ export class AIController {
 
     } catch (error) {
       logger.error('質問回答API エラー:', error)
+      res.setHeader('Content-Type', 'application/json')
       return res.status(500).json({
+        success: false,
         error: '質問への回答に失敗しました',
         message: 'サーバーエラーが発生しました'
       })
@@ -113,7 +125,9 @@ export class AIController {
       const { code, goal } = req.body
 
       if (!code) {
+        res.setHeader('Content-Type', 'application/json')
         return res.status(400).json({
+          success: false,
           error: 'コードが提供されていません',
           message: 'code フィールドは必須です'
         })
@@ -121,6 +135,7 @@ export class AIController {
 
       const result = await geminiService.suggestImprovements(code, goal)
 
+      res.setHeader('Content-Type', 'application/json')
       return res.json({
         success: true,
         suggestions: result.text,
@@ -129,7 +144,9 @@ export class AIController {
 
     } catch (error) {
       logger.error('コード改善提案API エラー:', error)
+      res.setHeader('Content-Type', 'application/json')
       return res.status(500).json({
+        success: false,
         error: '改善提案の生成に失敗しました',
         message: 'サーバーエラーが発生しました'
       })
@@ -143,6 +160,7 @@ export class AIController {
     try {
       const hasApiKey = !!process.env.GEMINI_API_KEY
 
+      res.setHeader('Content-Type', 'application/json')
       return res.json({
         success: true,
         status: hasApiKey ? 'ready' : 'not_configured',
@@ -158,7 +176,9 @@ export class AIController {
 
     } catch (error) {
       logger.error('AI状態確認API エラー:', error)
+      res.setHeader('Content-Type', 'application/json')
       return res.status(500).json({
+        success: false,
         error: 'AI状態の確認に失敗しました',
         message: 'サーバーエラーが発生しました'
       })
@@ -173,6 +193,7 @@ export class AIController {
       const { currentCode, context } = req.body
 
       if (!currentCode) {
+        res.setHeader('Content-Type', 'application/json')
         return res.status(400).json({
           success: false,
           error: '現在のコードが提供されていません'
@@ -184,6 +205,7 @@ export class AIController {
         context
       })
 
+      res.setHeader('Content-Type', 'application/json')
       return res.json({
         success: true,
         code: result.code,
@@ -193,6 +215,7 @@ export class AIController {
 
     } catch (error) {
       logger.error('お手本コード生成API エラー:', error)
+      res.setHeader('Content-Type', 'application/json')
       return res.status(500).json({
         success: false,
         error: 'お手本コードの生成に失敗しました'

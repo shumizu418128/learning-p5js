@@ -1,26 +1,26 @@
 import {
-  Lightbulb as LightbulbIcon,
-  PlayArrow as PlayIcon,
-  Refresh as RefreshIcon,
-  School as SchoolIcon,
-  Send as SendIcon,
-  Stop as StopIcon,
+    Lightbulb as LightbulbIcon,
+    PlayArrow as PlayIcon,
+    Refresh as RefreshIcon,
+    School as SchoolIcon,
+    Send as SendIcon,
+    Stop as StopIcon,
 } from '@mui/icons-material'
 import {
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  List,
-  ListItem,
-  Paper,
-  TextField,
-  Typography
+    Box,
+    Button,
+    Chip,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    List,
+    ListItem,
+    Paper,
+    TextField,
+    Typography
 } from '@mui/material'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import MarkdownRenderer from '../components/MarkdownRenderer'
@@ -519,6 +519,17 @@ function draw() {
         }),
       })
 
+      // レスポンスのステータスコードをチェック
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      // レスポンスのContent-Typeをチェック
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Expected JSON response but got ${contentType}`)
+      }
+
       const data = await response.json()
       if (data.success) {
         const aiResponse: ChatMessage = { sender: 'ai', text: data.answer || 'AI先生からのアドバイスを受け取りました！' }
@@ -544,7 +555,7 @@ function draw() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },　
+        },
         body: JSON.stringify({
           code: code,
           studentLevel: 'beginner',
@@ -563,6 +574,17 @@ function draw() {
 小学生が理解しやすい言葉で、絵文字も使って親しみやすく説明してください。`
         }),
       })
+
+      // レスポンスのステータスコードをチェック
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      // レスポンスのContent-Typeをチェック
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Expected JSON response but got ${contentType}`)
+      }
 
       const data = await response.json()
       if (data.success) {
@@ -612,6 +634,17 @@ function draw() {
           lineNumber: errorLine
         }),
       })
+
+      // レスポンスのステータスコードをチェック
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      // レスポンスのContent-Typeをチェック
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Expected JSON response but got ${contentType}`)
+      }
 
       const data = await response.json()
       if (data.success) {
@@ -665,6 +698,17 @@ function draw() {
         }),
       })
 
+      // レスポンスのステータスコードをチェック
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      // レスポンスのContent-Typeをチェック
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Expected JSON response but got ${contentType}`)
+      }
+
       const data = await response.json()
       if (data.success) {
         // AIからのコードを自動でエディタに設定
@@ -697,16 +741,6 @@ ${data.explanation || ''}`,
       setChatHistory((prev) => [...prev, aiError])
     }
     setIsLoadingAi(false)
-
-    // お手本コードのメッセージが表示された後にチャットを自動スクロール
-    setTimeout(() => {
-      const exampleCodeElement = document.getElementById('example-code-message')
-      if (exampleCodeElement && chatScrollRef.current) {
-        const elementTop = exampleCodeElement.offsetTop
-        const containerTop = chatScrollRef.current.offsetTop
-        chatScrollRef.current.scrollTop = elementTop - containerTop - 20
-      }
-    }, 100)
   }
 
   // サンプルコード
