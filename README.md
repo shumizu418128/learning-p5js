@@ -179,10 +179,11 @@ npm install
 ```bash
 # バックエンドの環境変数ファイルをコピー
 cd backend
-cp .env.example .env
+cp env.example .env
 
-# .envファイルを編集してGemini APIキーを設定
+# .envファイルを編集して必要な設定を行う
 # GEMINI_API_KEY=your-actual-gemini-api-key-here
+# ALLOWED_IPS=your-static-outbound-ip-addresses
 ```
 
 4. **開発サーバー起動**
@@ -198,32 +199,35 @@ cd frontend && npm run dev
 cd backend && npm run dev
 ```
 
-### Gemini APIキーの取得方法
+## セキュリティ設定
 
-1. [Google AI Studio](https://makersuite.google.com/) にアクセス
-2. Googleアカウントでログイン
-3. 「Get API Key」をクリック
-4. 新しいAPIキーを作成
-5. 取得したAPIキーを `backend/.env` ファイルの `GEMINI_API_KEY` に設定
+### Static Outbound IP Addresses
 
-### API機能テスト
+Render.comのStatic Outbound IP Addressesを使用してセキュリティを強化しています。
 
-バックエンドサーバー起動後、以下のエンドポイントでAI機能をテストできます：
+#### 設定方法
 
+1. **環境変数での設定**
 ```bash
-# AI状態確認
-curl http://localhost:8000/api/ai/status
-
-# コード分析テスト
-curl -X POST http://localhost:8000/api/ai/analyze \
-  -H "Content-Type: application/json" \
-  -d '{"code":"function setup(){createCanvas(400,400);}\nfunction draw(){background(220);circle(200,200,100);}"}'
-
-# 質問テスト
-curl -X POST http://localhost:8000/api/ai/question \
-  -H "Content-Type: application/json" \
-  -d '{"question":"p5.jsで円を描くにはどうすればいいですか？"}'
+# .envファイルまたは環境変数で設定
+ALLOWED_IPS=76.76.19.34,76.76.19.35
 ```
+
+2. **Render.comでの設定**
+- Render.comのダッシュボードでStatic Outbound IP Addressesを有効化
+- 提供されたIPアドレスを`ALLOWED_IPS`環境変数に設定
+
+#### セキュリティ効果
+
+- **IP制限**: 許可されたIPアドレスからのみAPIアクセスを許可
+- **外部露出防止**: Static Outbound IP Addressesは環境変数で管理
+- **開発環境対応**: 開発時はIP制限を無効化
+
+#### 注意事項
+
+- 本番環境では必ず`ALLOWED_IPS`を設定してください
+- 開発環境では`NODE_ENV=development`を設定してIP制限を無効化
+- Static Outbound IP AddressesはRender.comの有料プランで提供されます
 
 ## ライセンス
 

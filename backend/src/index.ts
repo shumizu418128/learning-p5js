@@ -1,11 +1,10 @@
 import compression from 'compression'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import express from 'express'
+import express, { RequestHandler } from 'express'
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 import { createServer } from 'http'
-import path from 'path'
 import { Server } from 'socket.io'
 import aiRoutes from './routes/aiRoutes'
 import geminiService from './services/geminiService'
@@ -13,6 +12,32 @@ import { logger } from './utils/logger'
 
 // 環境変数の読み込み
 dotenv.config()
+
+// Static Outbound IP Addressesの設定
+const ALLOWED_IPS = process.env.ALLOWED_IPS
+  ? process.env.ALLOWED_IPS.split(',').map(ip => ip.trim())
+  : ['::1', '127.0.0.1']; // デフォルトはlocalhostのみ
+
+// IP制限ミドルウェア
+const ipRestriction: RequestHandler = (req, res, next) => {
+  const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+
+  // 開発環境では全て許可
+  if (process.env.NODE_ENV === 'development') {
+    return next();
+  }
+
+  // 本番環境では許可されたIPのみ
+  if (clientIP && ALLOWED_IPS.includes(clientIP)) {
+    return next();
+  }
+
+  logger.warn(`アクセス拒否: ${clientIP} from ${req.path}`);
+  res.status(403).json({
+    error: 'Access denied',
+    message: 'このIPアドレスからのアクセスは許可されていません'
+  });
+};
 
 const app = express()
 const server = createServer(app)
@@ -44,6 +69,9 @@ app.use(cors({
 }))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+
+// IP制限を適用（ヘルスチェックとルートは除外）
+app.use('/api', ipRestriction)
 
 // ログミドルウェア
 app.use((req, res, next) => {
@@ -199,7 +227,7 @@ io.on('connection', (socket) => {
 })
 
 // エラーハンドリング
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express'
 
 app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
   logger.error('エラーが発生しました:', err)
