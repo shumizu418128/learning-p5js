@@ -84,14 +84,24 @@ app.use('/api/projects', (req, res) => {
   res.json({ message: 'プロジェクトAPIをここに実装予定' })
 })
 
+/*
+ * フロントエンドの静的ファイル配信とSPAフォールバックは
+ * APIルートの後、404ハンドラの前に配置する
+ */
+
 // フロントエンドの静的ファイルを配信
 app.use(express.static(path.join(__dirname, '../public')))
 
 // SPAのルーティング対応（すべてのルートをindex.htmlにフォールバック）
-app.use((req, res, next) => {
-  if (req.method !== 'GET') return next()
-  if (req.path.startsWith('/api/')) return next()
-  if (!req.accepts('html')) return next()
+app.get('*', (req, res) => {
+  // APIルートには反応しない
+  if (req.path.startsWith('/api/')) {
+    res.status(404).json({
+      error: 'Not Found',
+      message: 'APIエンドポイントが見つかりません'
+    })
+    return
+  }
   res.sendFile(path.join(__dirname, '../public/index.html'))
 })
 
@@ -218,12 +228,15 @@ app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
 })
 
 // 404ハンドリング
+// （SPAフォールバックより後ろには不要なので削除）
+/*
 app.all('*', (req, res) => {
   res.status(404).json({
     error: 'Not Found',
     message: 'リクエストされたリソースが見つかりません'
   })
 })
+*/
 
 // サーバー起動
 server.listen(PORT, () => {
