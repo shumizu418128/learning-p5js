@@ -988,15 +988,19 @@ function draw() {
       <Box sx={{
         height: '80vh', // 画面の縦幅8割を占めるように設定
         display: 'flex',
-        p: 1, // パディングを減らす
-        gap: 1, // ギャップを減らす
+        p: 1,
+        gap: 1,
         position: 'relative',
         zIndex: 1,
-        flexShrink: 0 // サイズを固定
+        minHeight: 0
       }}>
-<Box sx={{ display: 'flex', height: '100%', gap: 1 }}>
+        <Box sx={{ display: 'flex', height: '100%', gap: 1, width: '100%' }}>
           {/* コードエディタ */}
-<Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%', lg: '1 1 40%' }, height: '100%' }}>
+          <Box sx={{
+            flex: '1 1 35%',
+            height: '100%',
+            minWidth: 0
+          }}>
             <Paper sx={{
               height: '100%',
               display: 'flex',
@@ -1056,7 +1060,12 @@ function draw() {
           </Box>
 
           {/* プレビューエリア */}
-<Box sx={{ flex: { xs: '1 1 100%', md: '1 1 50%', lg: '1 1 32%' }, height: '100%' }}>
+          <Box sx={{
+            flex: '1 1 35%',
+            height: '100%',
+            minWidth: 0,
+            display: 'block'
+          }}>
             <Paper sx={{
               height: '100%',
               display: 'flex',
@@ -1131,10 +1140,11 @@ function draw() {
           </Box>
 
           {/* AI先生チャットパネル */}
-<Box sx={{
-            display: { xs: 'none', md: 'block' }, // 中画面以上で表示
-            flex: { lg: '1 1 28%' },
-            height: '100%' // 全高さに変更
+          <Box sx={{
+            display: 'block',
+            flex: '1 1 30%',
+            height: '100%',
+            minWidth: 0
           }}>
             <Paper sx={{
               height: '100%',
