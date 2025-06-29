@@ -3,7 +3,7 @@ FROM node:18-alpine
 WORKDIR /app
 
 # パッケージファイルをコピー
-COPY package*.json ./
+COPY ./package*.json ./
 
 # 依存関係をインストール
 RUN npm install --omit=dev
