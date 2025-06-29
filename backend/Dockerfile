@@ -3,13 +3,13 @@ FROM node:alpine
 WORKDIR /app
 
 # パッケージファイルをコピー
-COPY backend/package*.json ./
+COPY package*.json ./
 
 # 依存関係をインストール
 RUN npm install
 
 # アプリケーションコードをコピー
-COPY backend/. ./
+COPY . ./
 
 # TypeScriptをビルド（バックエンドのみ）
 RUN npm run build

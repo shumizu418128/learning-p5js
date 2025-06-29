@@ -93,9 +93,6 @@ prisma/migrations/
 prisma/*.db
 prisma/*.db-journal
 
-# Docker
-.dockerignore
-
 # Temporary folders
 tmp/
 temp/
